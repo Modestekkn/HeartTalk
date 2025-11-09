@@ -28,7 +28,6 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   final TtsService _ttsService = TtsService();
-  bool _isReading = false;
   int _autoReadCount = 0; // Compteur de lectures automatiques
 
   @override
@@ -71,7 +70,6 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
   Future<void> _autoRead(String text) async {
     if (_autoReadCount >= 2) return;
 
-    setState(() => _isReading = true);
     await _ttsService.speak(text);
 
     // Attendre la fin de la lecture (estimation basée sur la longueur du texte)
@@ -79,7 +77,6 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
     await Future.delayed(estimatedDuration);
 
     if (mounted) {
-      setState(() => _isReading = false);
       _autoReadCount++;
 
       // Si première lecture, programmer la deuxième après un délai
@@ -98,21 +95,6 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
     _pulseController.dispose();
     _ttsService.stop();
     super.dispose();
-  }
-
-  Future<void> _toggleSpeech(String text) async {
-    if (_isReading) {
-      await _ttsService.stop();
-      setState(() => _isReading = false);
-    } else {
-      setState(() => _isReading = true);
-      await _ttsService.speak(text);
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted && !_ttsService.isSpeaking) {
-          setState(() => _isReading = false);
-        }
-      });
-    }
   }
 
   void _startTimer() {
@@ -345,25 +327,6 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
                   ),
                   child: Column(
                     children: [
-                      // Bouton speaker
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: IconButton(
-                          onPressed: () => _toggleSpeech(currentTopic.text),
-                          icon: Icon(
-                            _isReading
-                                ? Icons.volume_up_rounded
-                                : Icons.volume_off_rounded,
-                            color: _isReading
-                                ? AppColors.success
-                                : AppColors.textSecondary,
-                            size: 28,
-                          ),
-                          tooltip: _isReading
-                              ? 'Arrêter la lecture'
-                              : 'Lire le sujet',
-                        ),
-                      ),
                       Text(
                         currentTopic.text,
                         style: AppStyles.h3(

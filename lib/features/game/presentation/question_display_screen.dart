@@ -23,7 +23,6 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   final TtsService _ttsService = TtsService();
-  bool _isReading = false;
   int _autoReadCount = 0; // Compteur de lectures automatiques
 
   @override
@@ -65,7 +64,6 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
   Future<void> _autoRead(String text) async {
     if (_autoReadCount >= 2) return;
 
-    setState(() => _isReading = true);
     await _ttsService.speak(text);
 
     // Attendre la fin de la lecture (estimation basée sur la longueur du texte)
@@ -73,7 +71,6 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
     await Future.delayed(estimatedDuration);
 
     if (mounted) {
-      setState(() => _isReading = false);
       _autoReadCount++;
 
       // Si première lecture, programmer la deuxième après un délai
@@ -91,22 +88,6 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
     _animationController.dispose();
     _ttsService.stop();
     super.dispose();
-  }
-
-  Future<void> _toggleSpeech(String text) async {
-    if (_isReading) {
-      await _ttsService.stop();
-      setState(() => _isReading = false);
-    } else {
-      setState(() => _isReading = true);
-      await _ttsService.speak(text);
-      // Attendre un peu puis vérifier si la lecture est terminée
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted && !_ttsService.isSpeaking) {
-          setState(() => _isReading = false);
-        }
-      });
-    }
   }
 
   Future<void> _nextQuestion(BuildContext context, WidgetRef ref) async {
@@ -257,26 +238,6 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
                       ),
                       child: Column(
                         children: [
-                          // Bouton speaker
-                          Align(
-                            alignment: Alignment.topRight,
-                            child: IconButton(
-                              onPressed: () =>
-                                  _toggleSpeech(currentQuestion.text),
-                              icon: Icon(
-                                _isReading
-                                    ? Icons.volume_up_rounded
-                                    : Icons.volume_off_rounded,
-                                color: _isReading
-                                    ? AppColors.success
-                                    : AppColors.textSecondary,
-                                size: 28,
-                              ),
-                              tooltip: _isReading
-                                  ? 'Arrêter la lecture'
-                                  : 'Lire la question',
-                            ),
-                          ),
                           Text(
                             currentQuestion.text,
                             style: AppStyles.h3(
