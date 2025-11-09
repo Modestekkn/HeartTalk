@@ -61,7 +61,7 @@ class CategorySelectionScreen extends ConsumerWidget {
                     // Icône paramètres
                     IconButton(
                       icon: const Icon(
-                        Icons.settings,
+                        Icons.more_vert,
                         color: AppColors.textLight,
                       ),
                       onPressed: () {

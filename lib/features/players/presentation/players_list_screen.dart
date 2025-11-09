@@ -42,6 +42,14 @@ class PlayersListScreen extends ConsumerWidget {
             style: AppStyles.h3(color: AppColors.white),
           ),
           centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert, color: AppColors.white),
+              onPressed: () {
+                Navigator.pushNamed(context, AppRouter.settings);
+              },
+            ),
+          ],
         ),
         body: SafeArea(
           child: Padding(

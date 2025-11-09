@@ -107,6 +107,12 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
                   child: const Icon(Icons.group, color: AppColors.textLight),
                 ),
               ),
+            IconButton(
+              icon: const Icon(Icons.more_vert, color: AppColors.textLight),
+              onPressed: () {
+                Navigator.pushNamed(context, AppRouter.settings);
+              },
+            ),
           ],
         ),
         body: SafeArea(

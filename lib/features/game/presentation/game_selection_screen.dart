@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_styles.dart';
@@ -90,94 +91,218 @@ class _GameSelectionScreenState extends ConsumerState<GameSelectionScreen> {
             ),
           ),
           centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert, color: AppColors.textLight),
+              onPressed: () {
+                Navigator.pushNamed(context, AppRouter.settings);
+              },
+            ),
+          ],
         ),
         body: SafeArea(
           child: Column(
             children: [
               // Bandeau joueur
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppStyles.space4,
                   vertical: AppStyles.space3,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withValues(alpha: 0.25),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Joueur A',
-                      style: AppStyles.h3(
-                        color: AppColors.white,
-                        fontweight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  currentPlayer.name,
+                  style: AppStyles.h2(
+                    color: AppColors.white,
+                    fontweight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
 
               // Section Question (moitié supérieure)
               Expanded(
-                child: GestureDetector(
+                child: _AnimatedSelectionCard(
                   onTap: () => _selectQuestion(context),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          category.primaryColor.withValues(alpha: 0.9),
-                          category.secondaryColor.withValues(alpha: 0.9),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  gradient: _getQuestionGradient(category.name),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.help_outline_rounded,
+                        size: 80,
+                        color: AppColors.white.withValues(alpha: 0.9),
                       ),
-                    ),
-                    child: Center(
-                      child: Text(
+                      const SizedBox(height: AppStyles.space3),
+                      const Text(
                         'Question',
-                        style: AppStyles.display(
+                        style: TextStyle(
+                          fontSize: 56,
                           color: AppColors.white,
-                          fontweight: FontWeight.bold,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
 
               // Section Sujet de discussion (moitié inférieure)
               Expanded(
-                child: GestureDetector(
+                child: _AnimatedSelectionCard(
                   onTap: () => _selectTopic(context),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          category.secondaryColor,
-                          category.primaryColor,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  gradient: _getTopicGradient(category.name),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 80,
+                        color: AppColors.white.withValues(alpha: 0.9),
                       ),
-                    ),
-                    child: Center(
-                      child: Text(
+                      const SizedBox(height: AppStyles.space3),
+                      const Text(
                         'Sujet de\ndiscussion',
-                        style: AppStyles.display(
+                        style: TextStyle(
+                          fontSize: 48,
                           color: AppColors.white,
-                          fontweight: FontWeight.bold,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                          height: 1.2,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  LinearGradient _getQuestionGradient(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'en couple':
+        return AppColors.coupleAskGradient;
+      case 'en amoureux':
+        return AppColors.lorversAskGradient;
+      case 'entre ami(e)s':
+        return AppColors.friendsAskGradient;
+      default:
+        return AppColors.coupleAskGradient;
+    }
+  }
+
+  LinearGradient _getTopicGradient(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'en couple':
+        return AppColors.coupleTopicGradient;
+      case 'en amoureux':
+        return AppColors.lorversTopicGradient;
+      case 'entre ami(e)s':
+        return AppColors.friendsTopicGradient;
+      default:
+        return AppColors.coupleTopicGradient;
+    }
+  }
+}
+
+// Widget animé pour les cartes de sélection
+class _AnimatedSelectionCard extends StatefulWidget {
+  final VoidCallback onTap;
+  final LinearGradient gradient;
+  final Widget child;
+
+  const _AnimatedSelectionCard({
+    required this.onTap,
+    required this.gradient,
+    required this.child,
+  });
+
+  @override
+  State<_AnimatedSelectionCard> createState() => _AnimatedSelectionCardState();
+}
+
+class _AnimatedSelectionCardState extends State<_AnimatedSelectionCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+    _controller.forward();
+    HapticFeedback.lightImpact();
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  void _handleTapCancel() {
+    setState(() => _isPressed = false);
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: widget.gradient,
+                boxShadow: _isPressed
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+              ),
+              child: child,
+            ),
+          );
+        },
+        child: widget.child,
       ),
     );
   }
