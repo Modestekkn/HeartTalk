@@ -19,7 +19,6 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
   final _nameController = TextEditingController();
   Gender? _selectedGender;
   String? _errorText;
-  int _playerCount = 1;
 
   @override
   void dispose() {
@@ -51,28 +50,15 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
         .read(playersProvider.notifier)
         .createPlayer(name: name, gender: _selectedGender!);
 
-    final players = ref.read(playersProvider);
+    // Réinitialiser le formulaire
+    setState(() {
+      _nameController.clear();
+      _selectedGender = null;
+      _errorText = null;
+    });
 
-    // Si on a au moins 2 joueurs, on peut commencer
-    if (players.length >= 2) {
-      // Navigation vers la sélection de jeu
-      Navigator.pushNamed(context, AppRouter.gameSelection);
-    } else {
-      // Réinitialiser pour le joueur suivant
-      setState(() {
-        _nameController.clear();
-        _selectedGender = null;
-        _errorText = null;
-        _playerCount++;
-      });
-    }
-  }
-
-  void _skipToGame() {
-    final players = ref.read(playersProvider);
-    if (players.length >= 2) {
-      Navigator.pushNamed(context, AppRouter.gameSelection);
-    }
+    // Navigation vers la liste des joueurs
+    Navigator.pushNamed(context, AppRouter.playersList);
   }
 
   @override
@@ -103,7 +89,7 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
-            'Joueur $_playerCount',
+            'Ajouter un joueur',
             style: AppStyles.h3(
               color: AppColors.textLight,
               fontweight: FontWeight.bold,
@@ -111,15 +97,14 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
           ),
           centerTitle: true,
           actions: [
-            if (players.length >= 2)
-              TextButton(
-                onPressed: _skipToGame,
-                child: Text(
-                  'Lancer',
-                  style: AppStyles.body(
-                    color: AppColors.textLight,
-                    fontweight: FontWeight.w600,
-                  ),
+            if (players.isNotEmpty)
+              IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRouter.playersList);
+                },
+                icon: Badge(
+                  label: Text('${players.length}'),
+                  child: const Icon(Icons.group, color: AppColors.textLight),
                 ),
               ),
           ],
@@ -133,7 +118,7 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
                 // Formulaire
                 Expanded(
                   child: CustomCard(
-                    padding: const EdgeInsets.all(AppStyles.space5),
+                    padding: const EdgeInsets.all(AppStyles.space4),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -150,7 +135,7 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
                             }
                           },
                         ),
-                        const SizedBox(height: AppStyles.space4),
+                        const SizedBox(height: AppStyles.space3),
 
                         // Label Genre
                         Text(
@@ -174,36 +159,6 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
                             });
                           },
                         ),
-
-                        const Spacer(),
-
-                        // Liste des joueurs ajoutés
-                        if (players.isNotEmpty) ...[
-                          Text(
-                            'Joueurs ajoutés (${players.length})',
-                            style: AppStyles.bodySmall(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: AppStyles.space2),
-                          Wrap(
-                            spacing: AppStyles.space2,
-                            runSpacing: AppStyles.space2,
-                            children: players.map((player) {
-                              return Chip(
-                                avatar: Text(player.genderEmoji),
-                                label: Text(player.name),
-                                deleteIcon: const Icon(Icons.close, size: 18),
-                                onDeleted: () {
-                                  ref
-                                      .read(playersProvider.notifier)
-                                      .removePlayer(player.id);
-                                },
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: AppStyles.space2),
-                        ],
                       ],
                     ),
                   ),
@@ -213,22 +168,12 @@ class _PlayerInputScreenState extends ConsumerState<PlayerInputScreen> {
 
                 // Bouton Valider
                 CustomButton(
-                  text: players.isEmpty ? 'Ajouter' : 'Ajouter un autre joueur',
+                  text: 'Valider',
                   gradient: category.gradient,
                   onPressed: _validateAndAddPlayer,
                   width: double.infinity,
+                  icon: Icons.check_circle_outline,
                 ),
-
-                // Bouton Lancer (si >= 2 joueurs)
-                if (players.length >= 2) ...[
-                  const SizedBox(height: AppStyles.space3),
-                  CustomButton(
-                    text: 'Commencer la partie',
-                    type: ButtonType.outline,
-                    onPressed: _skipToGame,
-                    width: double.infinity,
-                  ),
-                ],
               ],
             ),
           ),

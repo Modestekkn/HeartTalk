@@ -140,8 +140,8 @@ class _GenderOptionState extends State<_GenderOption>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppStyles.space3,
-            vertical: AppStyles.space4,
+            horizontal: AppStyles.space2,
+            vertical: AppStyles.space3,
           ),
           decoration: BoxDecoration(
             color: widget.isSelected ? widget.color : AppColors.grey100,
@@ -169,16 +169,16 @@ class _GenderOptionState extends State<_GenderOption>
                 curve: Curves.bounceOut,
                 child: Icon(
                   widget.icon,
-                  size: 40,
+                  size: 32,
                   color: widget.isSelected
                       ? AppColors.white
                       : AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: AppStyles.space2),
+              const SizedBox(height: AppStyles.space1),
               Text(
                 widget.label,
-                style: AppStyles.body(
+                style: AppStyles.bodySmall(
                   color: widget.isSelected
                       ? AppColors.white
                       : AppColors.textPrimary,
