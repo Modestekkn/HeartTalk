@@ -97,7 +97,7 @@ class PlayersListScreen extends ConsumerWidget {
                   CustomButton(
                     text: 'Lancer le jeu',
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRouter.gameSelection);
+                      Navigator.pushNamed(context, AppRouter.spinWheel);
                     },
                     gradient: category.gradient,
                     icon: Icons.play_arrow_rounded,
