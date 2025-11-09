@@ -8,6 +8,7 @@ import '../../../core/router/app_router.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../../category/providers/category_provider.dart';
 import '../../players/providers/players_provider.dart';
+import '../providers/game_provider.dart';
 
 class SpinWheelScreen extends ConsumerStatefulWidget {
   const SpinWheelScreen({super.key});
@@ -23,7 +24,7 @@ class _SpinWheelScreenState extends ConsumerState<SpinWheelScreen>
   late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
   bool _isSpinning = false;
-  int _selectedPlayerIndex = 0;
+  int? _selectedPlayerIndex; // Null au départ, pas de joueur par défaut
 
   @override
   void initState() {
@@ -122,7 +123,10 @@ class _SpinWheelScreenState extends ConsumerState<SpinWheelScreen>
       );
     }
 
-    final selectedPlayer = players[_selectedPlayerIndex];
+    // Pas de joueur sélectionné par défaut
+    final selectedPlayer = _selectedPlayerIndex != null
+        ? players[_selectedPlayerIndex!]
+        : null;
 
     return GradientBackground(
       gradient: category.gradient,
@@ -133,7 +137,11 @@ class _SpinWheelScreenState extends ConsumerState<SpinWheelScreen>
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              // Réinitialiser le jeu quand on revient en arrière
+              ref.read(gameProvider.notifier).resetGame();
+              Navigator.pop(context);
+            },
           ),
           actions: [
             IconButton(
@@ -176,46 +184,49 @@ class _SpinWheelScreenState extends ConsumerState<SpinWheelScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Avatar du joueur sélectionné avec animation
-                    AnimatedScale(
-                      scale: _isSpinning ? 1.1 : 1.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
+                    if (selectedPlayer != null)
+                      AnimatedScale(
+                        scale: _isSpinning ? 1.1 : 1.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              selectedPlayer.genderEmoji,
+                              style: const TextStyle(fontSize: 50),
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            selectedPlayer.genderEmoji,
-                            style: const TextStyle(fontSize: 50),
                           ),
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: AppStyles.space4),
+                    if (selectedPlayer != null)
+                      const SizedBox(height: AppStyles.space4),
 
                     // Nom du joueur
-                    AnimatedOpacity(
-                      opacity: _isSpinning ? 0.5 : 1.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        selectedPlayer.name,
-                        style: AppStyles.h2(
-                          color: AppColors.white,
-                          fontweight: FontWeight.bold,
+                    if (selectedPlayer != null)
+                      AnimatedOpacity(
+                        opacity: _isSpinning ? 0.5 : 1.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Text(
+                          selectedPlayer.name,
+                          style: AppStyles.h2(
+                            color: AppColors.white,
+                            fontweight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
 
                     const SizedBox(height: AppStyles.space5),
 
@@ -258,6 +269,9 @@ class _SpinWheelScreenState extends ConsumerState<SpinWheelScreen>
                                     ...List.generate(players.length, (index) {
                                       final angle =
                                           (2 * pi / players.length) * index;
+                                      final isSelected =
+                                          _selectedPlayerIndex != null &&
+                                          index == _selectedPlayerIndex;
                                       return Transform.translate(
                                         offset: Offset(
                                           cos(angle) * 56,
@@ -268,7 +282,7 @@ class _SpinWheelScreenState extends ConsumerState<SpinWheelScreen>
                                           height: 12,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: index == _selectedPlayerIndex
+                                            color: isSelected
                                                 ? category.primaryColor
                                                 : category.primaryColor
                                                       .withValues(alpha: 0.3),

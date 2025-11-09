@@ -289,8 +289,10 @@ flutter build appbundle --release
 ### Version 1.1 (A venir)
 - Filtrage par niveau de difficulte
 - Statistiques de jeu detaillees
-- Mode nuit
 - Personnalisation des avatars
+- Statistiques et badges
+- Mode défi avec actions
+
 
 ### Version 2.0 (Future)
 - Questions personnalisees par utilisateur
@@ -298,6 +300,12 @@ flutter build appbundle --release
 - Systeme de badges et achievements
 - Packs thematiques premium
 - Support multilingue
+
+Questions personnalisées
+Contenu communautaire
+Packs thématiques Premium (monétisation)
+Multijoueur en ligne
+
 
 ## Contribution
 

@@ -29,6 +29,7 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
   late Animation<double> _pulseAnimation;
   final TtsService _ttsService = TtsService();
   bool _isReading = false;
+  int _autoReadCount = 0; // Compteur de lectures automatiques
 
   @override
   void initState() {
@@ -50,6 +51,45 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
     _totalSeconds = settings.defaultTopicDuration;
     _startTimer();
     _ttsService.initialize();
+
+    // Lecture automatique après un délai
+    _scheduleAutoRead();
+  }
+
+  void _scheduleAutoRead() async {
+    // Attendre que le sujet soit chargé
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (mounted) {
+      final gameState = ref.read(gameProvider);
+      final topic = gameState.currentTopic;
+      if (topic != null && _autoReadCount < 2) {
+        await _autoRead(topic.text);
+      }
+    }
+  }
+
+  Future<void> _autoRead(String text) async {
+    if (_autoReadCount >= 2) return;
+
+    setState(() => _isReading = true);
+    await _ttsService.speak(text);
+
+    // Attendre la fin de la lecture (estimation basée sur la longueur du texte)
+    final estimatedDuration = Duration(seconds: (text.length ~/ 15) + 2);
+    await Future.delayed(estimatedDuration);
+
+    if (mounted) {
+      setState(() => _isReading = false);
+      _autoReadCount++;
+
+      // Si première lecture, programmer la deuxième après un délai
+      if (_autoReadCount == 1) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (mounted) {
+          await _autoRead(text);
+        }
+      }
+    }
   }
 
   @override

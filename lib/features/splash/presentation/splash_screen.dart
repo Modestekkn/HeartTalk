@@ -19,7 +19,8 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _navigateToNext() async {
     await Future.delayed(AppStyles.durationMiniShort);
     if (mounted) {
-      Navigator.pushNamed(context, '/onboarding');
+      // Utiliser pushReplacementNamed pour éviter de revenir au splash
+      Navigator.pushReplacementNamed(context, '/onboarding');
     }
   }
 

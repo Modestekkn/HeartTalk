@@ -7,15 +7,15 @@ import 'package:heartalk/core/database/database_helper.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // TEMPORAIRE: Supprimer l'ancienne base de données pour corriger l'erreur de schéma
+  // Initialiser la base de données (elle sera créée si elle n'existe pas)
   try {
-    await DatabaseHelper.instance.deleteDatabase();
+    await DatabaseHelper.instance.database;
     if (kDebugMode) {
-      debugPrint('✅ Ancienne base de données supprimée');
+      debugPrint('✅ Base de données initialisée');
     }
   } catch (e) {
     if (kDebugMode) {
-      debugPrint('⚠️ Erreur lors de la suppression de la base: $e');
+      debugPrint('⚠️ Erreur lors de l\'initialisation de la base: $e');
     }
   }
 

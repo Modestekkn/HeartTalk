@@ -207,6 +207,12 @@ class GameNotifier extends StateNotifier<GameState> {
   Future<void> skipTurn() async {
     await _selectNextPlayer();
   }
+
+  // Réinitialiser complètement le jeu (quand on revient en arrière)
+  void resetGame() {
+    ref.read(currentPlayerProvider.notifier).state = null;
+    state = const GameState();
+  }
 }
 
 // ============================================
