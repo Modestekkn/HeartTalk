@@ -63,6 +63,8 @@ class CategorySelectionScreen extends ConsumerWidget {
                       icon: const Icon(
                         Icons.more_vert,
                         color: AppColors.textLight,
+                        size: 32,
+                        weight: 200,
                       ),
                       onPressed: () {
                         Navigator.pushNamed(context, AppRouter.settings);

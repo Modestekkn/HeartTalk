@@ -44,7 +44,7 @@ class PlayersListScreen extends ConsumerWidget {
           centerTitle: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.more_vert, color: AppColors.white),
+              icon: const Icon(Icons.more_vert, color: AppColors.white, size: 32, weight: 200),
               onPressed: () {
                 Navigator.pushNamed(context, AppRouter.settings);
               },

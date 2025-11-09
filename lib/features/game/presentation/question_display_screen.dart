@@ -126,7 +126,7 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
           centerTitle: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.more_vert, color: AppColors.textLight),
+              icon: const Icon(Icons.more_vert, color: AppColors.textLight, size: 32, weight: 200),
               onPressed: () {
                 Navigator.pushNamed(context, AppRouter.settings);
               },

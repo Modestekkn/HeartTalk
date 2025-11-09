@@ -97,8 +97,9 @@ class _CategoryCardState extends State<CategoryCard>
                 bottom: -40,
                 left: -40,
                 child: Container(
-                  width: 140,
-                  height: 140,
+                  padding: EdgeInsets.all(8),
+                  width: 150,
+                  height: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withValues(alpha: 0.05),

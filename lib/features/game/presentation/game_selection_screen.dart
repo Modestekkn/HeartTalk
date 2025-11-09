@@ -93,7 +93,12 @@ class _GameSelectionScreenState extends ConsumerState<GameSelectionScreen> {
           centerTitle: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.more_vert, color: AppColors.textLight),
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppColors.textLight,
+                size: 32,
+                weight: 200,
+              ),
               onPressed: () {
                 Navigator.pushNamed(context, AppRouter.settings);
               },
@@ -103,26 +108,6 @@ class _GameSelectionScreenState extends ConsumerState<GameSelectionScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // Bandeau joueur
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppStyles.space4,
-                  vertical: AppStyles.space3,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                ),
-                child: Text(
-                  currentPlayer.name,
-                  style: AppStyles.h2(
-                    color: AppColors.white,
-                    fontweight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
               // Section Question (moitié supérieure)
               Expanded(
                 child: _AnimatedSelectionCard(
@@ -150,7 +135,25 @@ class _GameSelectionScreenState extends ConsumerState<GameSelectionScreen> {
                   ),
                 ),
               ),
-
+              // Bandeau joueur
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppStyles.space4,
+                  vertical: AppStyles.space3,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                ),
+                child: Text(
+                  currentPlayer.name,
+                  style: AppStyles.h2(
+                    color: AppColors.white,
+                    fontweight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               // Section Sujet de discussion (moitié inférieure)
               Expanded(
                 child: _AnimatedSelectionCard(
