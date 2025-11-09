@@ -511,9 +511,8 @@ Documenter pendant le développement > documenter après
 
 RESOURCES
 
-GitHub : [lien-vers-repo]
-Documentation technique : docs/
-Article complet : [lien]
+GitHub : [https://github.com/Modestekkn/HeartTalk/tree/main]
+Documentation technique : Readme.md dans le repo
 
 Questions ? Intéressé par des détails spécifiques ?
 Contactez-moi pour discuter d'architecture Flutter, state management ou optimisation de performances.

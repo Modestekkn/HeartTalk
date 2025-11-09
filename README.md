@@ -314,14 +314,17 @@ Les contributions sont les bienvenues. Pour contribuer:
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de details.
 
 ## Auteur
-
+- KOUAKANOU M. Modeste 
+- Call me  ModeDevIT
 Developpe avec passion pour faciliter les conversations authentiques et renforcer les liens humains.
 
 ## Contact
+-  +229 01 90 20 63 43
+- +229 01 40 76 88 71
 
 Pour toute question ou suggestion:
-- GitHub Issues: [Creer un issue](https://github.com/votre-username/heartalk/issues)
-- Email: votre.email@example.com
+- GitHub Issues: [Creer un issue](https://github.com/Modestekkn/HeartTalk/tree/main)
+- Email: koukanoumodeste88@gmail.com
 
 ## Remerciements
 
