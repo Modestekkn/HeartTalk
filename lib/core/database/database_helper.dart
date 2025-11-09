@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
+import 'database_enriched_data.dart';
+import 'database_enriched_topics.dart';
 
 /// Helper pour gérer la base de données SQLite
 class DatabaseHelper {
@@ -36,14 +38,14 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2, // Incrémenté pour forcer la mise à jour
+      version: 3, // Incrémenté pour enrichissement Phase B
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
+    if (oldVersion < 3) {
       // Supprimer et recréer les tables
       await db.execute('DROP TABLE IF EXISTS game_sessions');
       await db.execute('DROP TABLE IF EXISTS topics');
@@ -142,134 +144,75 @@ class DatabaseHelper {
       await db.insert('categories', category);
     }
 
-    // ========== QUESTIONS - EN COUPLE ==========
-    final coupleQuestions = [
-      'Quelle est la chose que tu admires le plus chez moi ?',
-      'Quel est ton souvenir préféré de nous deux ?',
-      'Comment vois-tu notre relation dans 5 ans ?',
-      'Qu\'est-ce qui te fait te sentir le plus aimé(e) dans notre relation ?',
-      'Quelle est ta façon préférée de passer du temps avec moi ?',
-      'Y a-t-il quelque chose que tu aimerais améliorer dans notre relation ?',
-      'Quel est le moment où tu t\'es senti(e) le plus proche de moi ?',
-      'Qu\'est-ce qui t\'a fait tomber amoureux/amoureuse de moi ?',
-      'Quelle est ta plus grande peur concernant notre relation ?',
-      'Comment puis-je mieux te soutenir au quotidien ?',
-    ];
+    // ========== QUESTIONS ENRICHIES - PHASE B ==========
 
-    for (var question in coupleQuestions) {
+    // Questions EN COUPLE (90 nouvelles)
+    for (var questionData in DatabaseEnrichedData.coupleQuestionsNew) {
       await db.insert('questions', {
         'id': uuid.v4(),
         'category_id': 'couple',
-        'text': question,
-        'level': 1,
+        'text': questionData['text'],
+        'level': questionData['level'],
         'is_used': 0,
       });
     }
 
-    // ========== QUESTIONS - EN AMOUREUX ==========
-    final amoureuxQuestions = [
-      'Qu\'est-ce qui t\'attire le plus chez une personne ?',
-      'Quel est ton type de rendez-vous idéal ?',
-      'Quelle est ta vision d\'une relation parfaite ?',
-      'Qu\'est-ce qui te fait rire le plus ?',
-      'Quel est ton plus grand rêve dans la vie ?',
-      'Comment te décrirais-tu en trois mots ?',
-      'Quelle est ta plus grande qualité selon toi ?',
-      'Qu\'est-ce qui est le plus important pour toi dans une relation ?',
-      'Quel est ton film ou livre d\'amour préféré et pourquoi ?',
-      'Qu\'est-ce qui te rend heureux/heureuse au quotidien ?',
-    ];
-
-    for (var question in amoureuxQuestions) {
+    // Questions EN AMOUREUX (90 nouvelles)
+    for (var questionData in DatabaseEnrichedData.amoureuxQuestionsNew) {
       await db.insert('questions', {
         'id': uuid.v4(),
         'category_id': 'amoureux',
-        'text': question,
-        'level': 1,
+        'text': questionData['text'],
+        'level': questionData['level'],
         'is_used': 0,
       });
     }
 
-    // ========== QUESTIONS - ENTRE AMIS ==========
-    final amisQuestions = [
-      'Quelle est la chose la plus folle que tu aies jamais faite ?',
-      'Si tu pouvais voyager n\'importe où, où irais-tu ?',
-      'Quel est ton super pouvoir préféré et pourquoi ?',
-      'Quelle est ta pire anecdote embarrassante ?',
-      'Si tu gagnais au loto, quelle serait la première chose que tu ferais ?',
-      'Quel est ton talent caché que personne ne connaît ?',
-      'Quelle célébrité aimerais-tu rencontrer et pourquoi ?',
-      'Quel est le meilleur conseil que tu aies jamais reçu ?',
-      'Si tu pouvais dîner avec n\'importe quelle personne, morte ou vivante, qui choisirais-tu ?',
-      'Quelle est ta plus grande fierté personnelle ?',
-    ];
-
-    for (var question in amisQuestions) {
+    // Questions ENTRE AMIS (90 nouvelles)
+    for (var questionData in DatabaseEnrichedData.amisQuestionsNew) {
       await db.insert('questions', {
         'id': uuid.v4(),
         'category_id': 'amis',
-        'text': question,
-        'level': 1,
+        'text': questionData['text'],
+        'level': questionData['level'],
         'is_used': 0,
       });
     }
 
-    // ========== SUJETS - EN COUPLE ==========
-    final coupleTopics = [
-      'Parlez de vos rêves et projets pour les 5 prochaines années',
-      'Discutez de ce qui vous rend vraiment heureux dans votre relation',
-      'Évoquez un défi que vous avez surmonté ensemble',
-      'Partagez vos langages d\'amour préférés',
-      'Discutez de vos traditions de couple préférées',
-    ];
+    // ========== SUJETS ENRICHIS - PHASE B ==========
 
-    for (var topic in coupleTopics) {
+    // Sujets EN COUPLE (45 nouveaux)
+    for (var topicData in DatabaseEnrichedTopics.coupleTopicsNew) {
       await db.insert('topics', {
         'id': uuid.v4(),
         'category_id': 'couple',
-        'text': topic,
-        'duration': 300,
-        'level': 1,
+        'text': topicData['text'],
+        'duration': topicData['duration'],
+        'level': topicData['level'],
         'is_used': 0,
       });
     }
 
-    // ========== SUJETS - EN AMOUREUX ==========
-    final amoureuxTopics = [
-      'Parlez de vos passions et hobbies préférés',
-      'Discutez de vos valeurs et principes de vie',
-      'Évoquez vos objectifs personnels et professionnels',
-      'Partagez vos expériences de voyage favorites',
-      'Discutez de ce qui vous fait sentir aimé(e) et apprécié(e)',
-    ];
-
-    for (var topic in amoureuxTopics) {
+    // Sujets EN AMOUREUX (45 nouveaux)
+    for (var topicData in DatabaseEnrichedTopics.amoureuxTopicsNew) {
       await db.insert('topics', {
         'id': uuid.v4(),
         'category_id': 'amoureux',
-        'text': topic,
-        'duration': 300,
-        'level': 1,
+        'text': topicData['text'],
+        'duration': topicData['duration'],
+        'level': topicData['level'],
         'is_used': 0,
       });
     }
 
-    // ========== SUJETS - ENTRE AMIS ==========
-    final amisTopics = [
-      'Débattez sur un sujet d\'actualité qui vous passionne',
-      'Partagez vos meilleures anecdotes de voyage',
-      'Discutez de vos séries ou films préférés du moment',
-      'Évoquez vos rêves d\'enfance et ce que vous en avez fait',
-      'Parlez de ce que vous admirez le plus chez vos amis',
-    ];
-
-    for (var topic in amisTopics) {
+    // Sujets ENTRE AMIS (45 nouveaux)
+    for (var topicData in DatabaseEnrichedTopics.amisTopicsNew) {
       await db.insert('topics', {
         'id': uuid.v4(),
         'category_id': 'amis',
-        'text': topic,
-        'duration': 300,
-        'level': 1,
+        'text': topicData['text'],
+        'duration': topicData['duration'],
+        'level': topicData['level'],
         'is_used': 0,
       });
     }

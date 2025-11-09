@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_styles.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/services/tts_service.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../../category/providers/category_provider.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -26,6 +27,8 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
   bool _hasVibrated = false;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  final TtsService _ttsService = TtsService();
+  bool _isReading = false;
 
   @override
   void initState() {
@@ -46,13 +49,30 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
     _remainingSeconds = settings.defaultTopicDuration;
     _totalSeconds = settings.defaultTopicDuration;
     _startTimer();
+    _ttsService.initialize();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _pulseController.dispose();
+    _ttsService.stop();
     super.dispose();
+  }
+
+  Future<void> _toggleSpeech(String text) async {
+    if (_isReading) {
+      await _ttsService.stop();
+      setState(() => _isReading = false);
+    } else {
+      setState(() => _isReading = true);
+      await _ttsService.speak(text);
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && !_ttsService.isSpeaking) {
+          setState(() => _isReading = false);
+        }
+      });
+    }
   }
 
   void _startTimer() {
@@ -197,29 +217,6 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
             ),
             child: Column(
               children: [
-                // Avatar et nom du joueur
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    border: Border.all(color: Colors.white, width: 4),
-                  ),
-                  child: Center(
-                    child: Text(
-                      currentPlayer.name[0].toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: AppStyles.space2),
-
                 Text(
                   currentPlayer.name,
                   style: AppStyles.h2(
@@ -306,13 +303,36 @@ class _TopicTimerScreenState extends ConsumerState<TopicTimerScreen>
                       ),
                     ],
                   ),
-                  child: Text(
-                    currentTopic.text,
-                    style: AppStyles.h3(
-                      color: AppColors.textPrimary,
-                      fontweight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    children: [
+                      // Bouton speaker
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: IconButton(
+                          onPressed: () => _toggleSpeech(currentTopic.text),
+                          icon: Icon(
+                            _isReading
+                                ? Icons.volume_up_rounded
+                                : Icons.volume_off_rounded,
+                            color: _isReading
+                                ? AppColors.success
+                                : AppColors.textSecondary,
+                            size: 28,
+                          ),
+                          tooltip: _isReading
+                              ? 'Arrêter la lecture'
+                              : 'Lire le sujet',
+                        ),
+                      ),
+                      Text(
+                        currentTopic.text,
+                        style: AppStyles.h3(
+                          color: AppColors.textPrimary,
+                          fontweight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
 

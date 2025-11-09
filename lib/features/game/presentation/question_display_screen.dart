@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_styles.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/services/tts_service.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../../category/providers/category_provider.dart';
 import '../providers/game_provider.dart';
@@ -21,6 +22,8 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  final TtsService _ttsService = TtsService();
+  bool _isReading = false;
 
   @override
   void initState() {
@@ -40,12 +43,30 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
         );
 
     _animationController.forward();
+    _ttsService.initialize();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _ttsService.stop();
     super.dispose();
+  }
+
+  Future<void> _toggleSpeech(String text) async {
+    if (_isReading) {
+      await _ttsService.stop();
+      setState(() => _isReading = false);
+    } else {
+      setState(() => _isReading = true);
+      await _ttsService.speak(text);
+      // Attendre un peu puis vérifier si la lecture est terminée
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && !_ttsService.isSpeaking) {
+          setState(() => _isReading = false);
+        }
+      });
+    }
   }
 
   Future<void> _nextQuestion(BuildContext context, WidgetRef ref) async {
@@ -126,7 +147,12 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
           centerTitle: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.more_vert, color: AppColors.textLight, size: 32, weight: 200),
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppColors.textLight,
+                size: 32,
+                weight: 200,
+              ),
               onPressed: () {
                 Navigator.pushNamed(context, AppRouter.settings);
               },
@@ -191,6 +217,26 @@ class _QuestionDisplayScreenState extends ConsumerState<QuestionDisplayScreen>
                       ),
                       child: Column(
                         children: [
+                          // Bouton speaker
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: IconButton(
+                              onPressed: () =>
+                                  _toggleSpeech(currentQuestion.text),
+                              icon: Icon(
+                                _isReading
+                                    ? Icons.volume_up_rounded
+                                    : Icons.volume_off_rounded,
+                                color: _isReading
+                                    ? AppColors.success
+                                    : AppColors.textSecondary,
+                                size: 28,
+                              ),
+                              tooltip: _isReading
+                                  ? 'Arrêter la lecture'
+                                  : 'Lire la question',
+                            ),
+                          ),
                           Text(
                             currentQuestion.text,
                             style: AppStyles.h3(
