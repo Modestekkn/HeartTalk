@@ -162,7 +162,7 @@ class _SpinWheelScreenState extends ConsumerState<SpinWheelScreen>
                       ),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
-                        category.primaryColor.withValues(alpha: 0.7),
+                        category.primaryColor.withValues(alpha: 0.85),
                         BlendMode.multiply,
                       ),
                     ),
