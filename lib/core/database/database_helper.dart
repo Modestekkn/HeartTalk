@@ -15,15 +15,42 @@ class DatabaseHelper {
     return _database!;
   }
 
+  // Méthode pour supprimer complètement la base de données
+  Future<void> deleteDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'heartalk.db');
+    await _database?.close();
+    _database = null;
+    await databaseFactory.deleteDatabase(path);
+  }
+
+  // Méthode pour réinitialiser la base de données
+  Future<void> resetDatabase() async {
+    await deleteDatabase();
+    _database = await _initDB('heartalk.db');
+  }
+
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Incrémenté pour forcer la mise à jour
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Supprimer et recréer les tables
+      await db.execute('DROP TABLE IF EXISTS game_sessions');
+      await db.execute('DROP TABLE IF EXISTS topics');
+      await db.execute('DROP TABLE IF EXISTS questions');
+      await db.execute('DROP TABLE IF EXISTS categories');
+      await _createDB(db, newVersion);
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -32,7 +59,7 @@ class DatabaseHelper {
       CREATE TABLE categories (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        image TEXT NOT NULL,
+        emoji TEXT NOT NULL,
         description TEXT NOT NULL,
         primary_color TEXT NOT NULL,
         secondary_color TEXT NOT NULL
@@ -258,15 +285,13 @@ class DatabaseHelper {
 
   /// Récupérer les questions par catégorie
   Future<List<Map<String, dynamic>>> getQuestionsByCategory(
-      String categoryId, {
-        bool onlyUnused = false,
-      }) async {
+    String categoryId, {
+    bool onlyUnused = false,
+  }) async {
     final db = await database;
     return await db.query(
       'questions',
-      where: onlyUnused
-          ? 'category_id = ? AND is_used = 0'
-          : 'category_id = ?',
+      where: onlyUnused ? 'category_id = ? AND is_used = 0' : 'category_id = ?',
       whereArgs: [categoryId],
       orderBy: 'RANDOM()',
     );
@@ -274,15 +299,13 @@ class DatabaseHelper {
 
   /// Récupérer les sujets par catégorie
   Future<List<Map<String, dynamic>>> getTopicsByCategory(
-      String categoryId, {
-        bool onlyUnused = false,
-      }) async {
+    String categoryId, {
+    bool onlyUnused = false,
+  }) async {
     final db = await database;
     return await db.query(
       'topics',
-      where: onlyUnused
-          ? 'category_id = ? AND is_used = 0'
-          : 'category_id = ?',
+      where: onlyUnused ? 'category_id = ? AND is_used = 0' : 'category_id = ?',
       whereArgs: [categoryId],
       orderBy: 'RANDOM()',
     );
@@ -329,9 +352,9 @@ class DatabaseHelper {
 
   /// Créer une nouvelle session de jeu
   Future<String> createGameSession(
-      String categoryId,
-      List<Map<String, dynamic>> players,
-      ) async {
+    String categoryId,
+    List<Map<String, dynamic>> players,
+  ) async {
     final db = await database;
     const uuid = Uuid();
     final sessionId = uuid.v4();
